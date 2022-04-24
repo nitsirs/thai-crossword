@@ -10,8 +10,8 @@
 <h4 align="center">An online version of Thai crossword game - <a href="https://eduploys.com/product/kumkom-adult-kkga11/" target="_blank">KumKom</a>.</h4>
 
 <p align="center">
-  <a href="https://badge.fury.io/js/electron-markdownify">
-    <img src="https://badge.fury.io/js/electron-markdownify.svg"
+  <a href="">
+    <img src="public/Thai crossword copy.jpg"
          alt="Gitter">
   </a>
   <a href="https://gitter.im/amitmerchant1990/electron-markdownify"><img src="https://badges.gitter.im/amitmerchant1990/electron-markdownify.svg"></a>
