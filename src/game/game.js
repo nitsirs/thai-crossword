@@ -52,11 +52,11 @@ export const ThaiCrossword = {
         console.log("วางตัวอักษรผิด วางใหม่ครับ");
         return;
       }
-      
+
       fillStack(G, ctx, playerID);
       G.players[playerID].score.push(scoreThisTurn);
       G.openScore[playerID] = true; //TODO: add snackbar to show score
-      console.log("ทำคะแนนได้ " + scoreThisTurn+" คะแนน");
+      console.log("ทำคะแนนได้ " + scoreThisTurn + " คะแนน");
       //remove old player cells
       G.newCells.map((_, i) => {
         G.newCells[i].map((_, j) => {
@@ -239,8 +239,6 @@ function isValidMove(G, ctx) {
     });
   }
 
-  
-
   if (isValid === false) {
     console.log("Invalid move: isValid is false: maybe blank axis>1");
     index[0] = -1;
@@ -408,10 +406,10 @@ function fillLine(G, ctx, index) {
 }
 function calculateScore(G, ctx, arr, gcells) {
   // check if lastest index is not valid
-  if(G.currentIndex.at(-1)[0] === -1){
+  if (G.currentIndex.at(-1)[0] === -1) {
     // delete invalid index from currentIndex
     const newIndexArray = Array.from(G.currentIndex);
-    newIndexArray.splice(-1,1);
+    newIndexArray.splice(-1, 1);
     G.currentIndex = newIndexArray;
     return 0;
   }
@@ -465,7 +463,9 @@ function calculateScore(G, ctx, arr, gcells) {
         count++;
       }
     });
-    count > 1 ? horizontalIntersect++ : null;
+    if (count > 1) {
+      horizontalIntersect++;
+    }
   });
   newArrTrans.map((row, i) => {
     let count = 0;
@@ -474,12 +474,15 @@ function calculateScore(G, ctx, arr, gcells) {
         count++;
       }
     });
-    count > 1 ? verticalIntersect++ : null;
+    if (count > 1) {
+      verticalIntersect++;
+    }
   });
 
   // check parallel move
 
-  if (G.currentIndex.at(-2)[0]) { // not first move (not null)
+  if (G.currentIndex.at(-2)[0]) {
+    // not first move (not null)
     if (G.currentIndex.at(-2)[0] !== G.currentIndex.at(-2)[1]) {
       console.log(G.currentIndex.at(-2)[3]);
       //screen out once move
@@ -561,12 +564,11 @@ function calculateScore(G, ctx, arr, gcells) {
         additionalScore += newAdditionalScore;
       }
     });
-
   }
   newScore += additionalScore;
 
   //Bingo Condition
-  switch(oneCount) {
+  switch (oneCount) {
     case 6:
       newScore += 40;
       console.log("Bingo! +40");
@@ -586,7 +588,6 @@ function calculateScore(G, ctx, arr, gcells) {
     default:
       break;
   }
-  
 
   console.log("all score: ", newScore);
 

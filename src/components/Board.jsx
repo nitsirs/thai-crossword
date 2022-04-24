@@ -1,9 +1,6 @@
-import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import ImageList from "@mui/material/ImageList";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import Stack from "@mui/material/Stack";
-import Card from "@mui/material/Card";
 import Characters from "./Characters";
 import { unlimitedSet } from "../game/boardInfo";
 
