@@ -11,7 +11,7 @@ const server = `${protocol}//${hostname}:${port}`;
 const ThaiBoardClient = Client({
   game: ThaiCrossword,
   board: ThaiBoard,
-  multiplayer: SocketIO({ server: server }),
+  multiplayer: SocketIO({ server: 'http://localhost:8000' }),
   debug: true,
 });
 
