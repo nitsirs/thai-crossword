@@ -32,7 +32,9 @@
   <a href="#license">License</a>
 </p>
 
-![screenshot](public/Thai crossword copy.jpg)
+<img src="public/Thai-crossword-cover.png"
+         alt="Cover">
+
 
 ## Key Features
 
