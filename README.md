@@ -1,7 +1,7 @@
 
 <h1 align="center">
   <br>
-  <a href="http://www.amitmerchant.com/electron-markdownify"><img src="public/kumkom.png" alt="Markdownify" width="200"></a>
+  <a href="https://github.com/nitsirs/thai-crossword"><img src="public/kumkom.png" alt="Thai Crossword" width="200"></a>
   <br>
   Thai Crossword
   <br>
