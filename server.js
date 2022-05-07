@@ -1,10 +1,7 @@
 import { Server, Origins } from "boardgame.io/server";
 import path from "path";
 import serve from "koa-static";
-import { initializeApp } from 'firebase-admin/app';
-
 const { ThaiCrossword } = require("./src/game/game");
-
 
 const server = Server({ games: [ThaiCrossword] });
 const PORT = process.env.PORT || 8000;

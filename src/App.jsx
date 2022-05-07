@@ -12,7 +12,7 @@ const server = `${protocol}//${hostname}:${port}`;
 const ThaiBoardClient = Client({
   game: ThaiCrossword,
   board: ThaiBoard,
-  multiplayer: Local(), //TODO: change this to SocketIO(server) or firebase
+  multiplayer: SocketIO({ server: server }), //TODO: change this to SocketIO(server) or firebase
   debug: true,
 });
 
@@ -20,7 +20,7 @@ const App = () => {
   let params = useParams();
   return (
     <div>
-      <ThaiBoardClient playerID="0"/> 
+      <ThaiBoardClient playerID={params.playerID}/> 
     </div>
   );
 };
