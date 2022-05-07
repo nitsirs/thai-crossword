@@ -18,7 +18,7 @@ export default function Home() {
       </head>
       <body>
         <Typography variant="h1" component="h1">
-          Welcome to Thai Crossword
+          Welcome to Thai Crossword!
         </Typography>
   
       </body>
