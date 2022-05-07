@@ -1,84 +1,62 @@
 import Board from "../components/Board";
-import { DragDropContext } from "react-beautiful-dnd";
 import { Button } from "@mui/material";
 import Charstack from "../components/Charstack";
-import { score, defaultVal, unlimitedSet } from "./boardInfo";
+import { score, defaultVal, unlimitedSet, charSet } from "./boardInfo";
 import { Stack } from "@mui/material";
 import { Grid } from "@mui/material";
 import { Divider } from "@mui/material";
-import Container from '@mui/material/Container';
+import Container from "@mui/material/Container";
+import { DndContext } from "@dnd-kit/core";
+import Characters from "../components/Characters";
+import { useState } from "react";
+import {
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
-//FIXME: https://joshwcomeau.github.io/react-flip-move/examples/#/scrabble?_k=omfsxv more robust and beautiful board
-// https://github.com/joshwcomeau/react-flip-move/blob/gh-pages/examples/components/3_Scrabble.jsx
 function ThaiBoard(props) {
-  function handleOnDragEnd(result) {
-    // dropped outside the list or dropped on the same cell
-    if (
-      !result.destination ||
-      (result.destination.index == result.source.index &&
-        result.destination.droppableId == result.source.droppableId)
-    )
-      return;
+  function handleDragEnd(event) {
+    /* Note about id:
+     * Droppable component's id (in the board) is in the form of "rowIndex-cellIndex"
+     * SortableItem component's id is in the form of "value-index"
+     * Draggable component's id
+     *   - in the stack is in the form of "value-index"
+     *   - in the board is in the form of "value-rowIndex-cellIndex"
+     */
+    console.log(event);
+    const { active, over } = event;
 
-    // dropped inside character zone
-    if (result.destination.droppableId === "characters") {
-      const items = Array.from(props.G.players[props.playerID].stack);
-      if (result.source.droppableId === "unlimited") {
-        return;
-      }
-      // if drag from inside; reorder the characters
-      if (result.source.droppableId === "characters") {
-        const [reorderedItem] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, reorderedItem);
-      } // if from outside; add the character to the array
-      else {
-        //get the character value (draggable ID of character card is in "character-index" form)
-        let value = result.draggableId.split("-")[0];
-        items.splice(result.destination.index, 0, value);
-        //if dragged form the board, remove the character from the original cell
-
-        //const newBoard = Array.from(props.G.cells);
-        const originalPosition = result.source.droppableId.split("-");
-        originalPosition.forEach((x, i) => {
-          originalPosition[i] = parseInt(x); // "0-0" => ["0","0"] => [0,0]
-        });
-        if (
-          unlimitedSet.includes(
-            props.G.cells[originalPosition[0]][originalPosition[1]]
-          )
-        ) {
-          return;
-        }
-        //set original position to default
-        props.moves.setChar(
-          originalPosition[0],
-          originalPosition[1],
-          score[originalPosition[0]][originalPosition[1]]
-        );
-      }
-      props.moves.setStack(props.playerID, items);
-    }
-    // dropped inside the the board zone; add the character card to the specified cell
-    // and remove it from characters stack
-    else if (result.destination.droppableId.match("\\d-\\d")) {
-      const position = result.destination.droppableId.split("-");
+    // dropped inside the board
+    if (over && over.id.match("\\d{1,2}-\\d{1,2}")) {
+      const position = over.id.split("-");
       //turn all of position to int
       position.forEach((x, i) => {
         position[i] = parseInt(x); // "0-0" => ["0","0"] => [0,0]
       });
-
       //make sure that the target cell doesn't have characters yet
-      console.log(props.G.cells[position[0]][position[1]]);
+
       if (!defaultVal.includes(props.G.cells[position[0]][position[1]])) {
         console.log("cell is occupied");
-        /*if(confirm("ต้องการแทนที่หรือไม่? \nแทนที่แล้วเปลี่ยนกลับไม่ได้นะจ๊ะ")){
-          TODO: implement this
-        }else{return}*/ 
+        /*if (
+          confirm("ต้องการแทนที่หรือไม่? \nแทนที่แล้วเปลี่ยนกลับไม่ได้นะจ๊ะ") //TODO: Implement this
+        ) {
+        } else {
+          return;
+        }*/
         return;
-
       }
+
+      let value = active.id.split("-")[0];
       //get the character value (draggable ID of character card is in "character-index" form)
-      let value = result.draggableId.split("-")[0];
       //prevent dropping vowel on consonant or vice versa
       if (
         score[position[0]][position[1]] === 0 &&
@@ -93,57 +71,64 @@ function ThaiBoard(props) {
         console.log("vowel cannot be placed on consonant");
         return;
       }
-      //add the character to the board
-      props.moves.setChar(position[0], position[1], value);
-
-      //if drag from charstack remove the character from characters stack
-      console.log(result);
-      if (result.source.droppableId === "characters") {
-        const items = Array.from(props.G.players[props.playerID].stack);
-        items.splice(result.source.index, 1);
-        props.moves.setStack(props.playerID, items);
-      }
-
-      //if draging inside the board, remove the character from the original cell
-      if (
-        result.source.droppableId.match("\\d-\\d") &&
-        result.source.droppableId !== result.destination.droppableId
-      ) {
-        const originalPosition = result.source.droppableId.split("-");
-        originalPosition.forEach((x, i) => {
-          originalPosition[i] = parseInt(x); // "0-0" => ["0","0"] => [0,0]
-        });
+      //remove character
+      if (active.id.match("\\D-\\d{1,2}\\-\\d{1,2}")) {
+        // from original cell
         props.moves.setChar(
-          originalPosition[0],
-          originalPosition[1],
-          score[originalPosition[0]][originalPosition[1]]
+          active.id.split("-")[1],
+          active.id.split("-")[2],
+          score[active.id.split("-")[1]][active.id.split("-")[2]]
+        );
+      } else if (active.id.match("\\D-\\d{1,2}") && charSet.includes(active.id.split("-")[0]) ) {
+        // from stack
+        const stack = Array.from(props.G.players[props.playerID].stack);
+        console.log(stack);
+        console.log(active.id.split("-")[1]);
+        stack.splice(active.id.split("-")[1], 1);
+
+        props.moves.setStack(props.playerID, stack);
+      }
+      //add character
+      props.moves.setChar(position[0], position[1], value);
+    }
+    // drop inside the stack
+    else if(over.id.match("\\D-\\d{1,2}")) {
+      console.log(active.id, over.id);
+      if (active.id.match("\\D-\\d{1,2}\\-\\d{1,2}")) {
+        // from board; add to stack; remove from original cell
+        const stack = Array.from(props.G.players[props.playerID].stack);
+        if (unlimitedSet.includes(active.id.split("-")[0])) {
+        } else {
+          stack.splice(over.id.split("-")[1], 0, active.id.split("-")[0]);
+        }
+
+        props.moves.setChar(
+          active.id.split("-")[1],
+          active.id.split("-")[2],
+          score[active.id.split("-")[1]][active.id.split("-")[2]]
+        );
+        props.moves.setStack(props.playerID, stack);
+      } else if (active.id.match("\\D-\\d{1,2}")) {
+        // from stack; reorder stack
+        const oldIndex = props.G.players[props.playerID].stack.indexOf(
+          active.id.split("-")[0]
+        );
+        const newIndex = props.G.players[props.playerID].stack.indexOf(
+          over.id.split("-")[0]
+        );
+        props.moves.setStack(
+          props.playerID,
+          arrayMove(props.G.players[props.playerID].stack, oldIndex, newIndex)
         );
       }
     }
-    if (result.destination.droppableId === "unlimited") {
-      if (result.source.droppableId === "characters") {
-        return;
-      }
-      if (result.source.droppableId.match("\\d-\\d")) {
-        const originalPosition = result.source.droppableId.split("-");
-        originalPosition.forEach((x, i) => {
-          originalPosition[i] = parseInt(x); // "0-0" => ["0","0"] => [0,0]
-        });
-        if (
-          unlimitedSet.includes(
-            props.G.cells[originalPosition[0]][originalPosition[1]]
-          )
-        ) {
-          props.moves.setChar(
-            originalPosition[0],
-            originalPosition[1],
-            score[originalPosition[0]][originalPosition[1]]
-          );
-        }
-      }
-    }
   }
-
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   function switchTurn() {
     props.moves.isValidMove();
     props.moves.addScore(props.playerID);
@@ -151,86 +136,96 @@ function ThaiBoard(props) {
 
   return (
     <div>
-      <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Container >
-        <Stack
-          direction="row"
-          spacing={{xl:3, lg:2, md:1, sm:1, xs:1}}
-          
-        >
-          
-          <Board skeleton={props.G.cells} />
+      <DndContext
+        onDragEnd={handleDragEnd}
+        sensors={sensors}
+        collisionDetection={closestCenter}
+      >
+        <Container>
           <Stack
-            direction="column"
-            alignItems="center"
-            justifyContent="space-evenly"
+            direction="row"
+            spacing={{ xl: 3, lg: 2, md: 1, sm: 1, xs: 1 }}
           >
-            <h1 className="score">
-              คะแนนของคุณตอนนี้:{" "}
-              <div className="rounded-text">
-                {props.G.players[props.playerID].score.reduce(function (a, b) {
-                  return a + b;
-                }, 0)}{" "}
-                แต้ม
-              </div>
-            </h1>
-
-            {props.playerID == props.ctx.currentPlayer && (
-              <h2 className="turn">ถึงตาคุณแล้ว! </h2>
-            )}
-            {props.playerID != props.ctx.currentPlayer && (
-              <h2 className="turn">
-                ยังไม่ถึงตาคุณ <br />
-                🤫 หุบปาก อย่ารบกวน คู่ต่อสู้กำลังใช้ความคิด... <br />
-                {props.G.players[props.playerID].score.reduce(function (a, b) {
-                  return a + b;
-                }, 0) >=
-                props.G.players[
-                  (parseInt(props.playerID) + 1) % 2
-                ].score.reduce(function (a, b) {
-                  return a + b;
-                }, 0)
-                  ? "คะแนนของคุณ นำศัตรูอยู่หลายโยชน์ "
-                  : "คะแนนของคุณน้อยกว่าคู่ต่อสู้"}
-              </h2>
-            )}
-
+            <Board skeleton={props.G.cells} />
             <Stack
-              className="charstack-container"
               direction="column"
               alignItems="center"
-              justifyContent="center"
+              justifyContent="space-evenly"
             >
-              <Charstack
-                list={props.G.players[props.playerID].stack}
-                height="7vh"
-                name="characters"
-              />
-              <Divider className="divider">
-                สระข้างล่าง มีไม่จำกัด หยิบไปใส่ตามสบาย
-              </Divider>
-              <Charstack
-                list={unlimitedSet.slice(0, 6)}
-                height="3vh"
-                name="unlimited"
-              />
-              <Charstack
-                list={unlimitedSet.slice(6, 13)}
-                height="3vh"
-                name="unlimited"
-              />
-            </Stack>
+              <h1 className="score">
+                คะแนนของคุณตอนนี้:{" "}
+                <div className="rounded-text">
+                  {props.G.players[props.playerID].score.reduce(function (
+                    a,
+                    b
+                  ) {
+                    return a + b;
+                  },
+                  0)}{" "}
+                  แต้ม
+                </div>
+              </h1>
 
-            {props.playerID == props.ctx.currentPlayer && (
-              <h2 className="turn">ลากตัวอักษรข้างบน 🖕🏿 ไปใส่กระดาน</h2>
-            )}
-            <Button variant="outlined" onClick={switchTurn}>
-              Turn
-            </Button>
+              {props.playerID == props.ctx.currentPlayer && (
+                <h2 className="turn">ถึงตาคุณแล้ว! </h2>
+              )}
+              {props.playerID != props.ctx.currentPlayer && (
+                <h2 className="turn">
+                  ยังไม่ถึงตาคุณ <br />
+                  🤫 หุบปาก อย่ารบกวน คู่ต่อสู้กำลังใช้ความคิด... <br />
+                  {props.G.players[props.playerID].score.reduce(function (
+                    a,
+                    b
+                  ) {
+                    return a + b;
+                  },
+                  0) >=
+                  props.G.players[
+                    (parseInt(props.playerID) + 1) % 2
+                  ].score.reduce(function (a, b) {
+                    return a + b;
+                  }, 0)
+                    ? "คะแนนของคุณ นำศัตรูอยู่หลายโยชน์ "
+                    : "คะแนนของคุณน้อยกว่าคู่ต่อสู้"}
+                </h2>
+              )}
+
+              <Stack
+                className="charstack-container"
+                direction="column"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Charstack
+                  list={props.G.players[props.playerID].stack}
+                  height="7vh"
+                  name="characters"
+                />
+                <Divider className="divider">
+                  สระข้างล่าง มีไม่จำกัด หยิบไปใส่ตามสบาย
+                </Divider>
+                <Charstack
+                  list={unlimitedSet.slice(0,6)}
+                  height="3.5vh"
+                  name="characters"
+                />
+                <Charstack
+                  list={unlimitedSet.slice(6,14)}
+                  height="3.5vh"
+                  name="characters"
+                />
+              </Stack>
+
+              {props.playerID == props.ctx.currentPlayer && (
+                <h2 className="turn">ลากตัวอักษรข้างบน 🖕🏿 ไปใส่กระดาน</h2>
+              )}
+              <Button variant="outlined" onClick={switchTurn}>
+                Turn
+              </Button>
+            </Stack>
           </Stack>
-        </Stack>
         </Container>
-      </DragDropContext>
+      </DndContext>
     </div>
   );
 }

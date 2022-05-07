@@ -291,6 +291,12 @@ function fillLine(G, ctx, index) {
       } else {
         arr[index[2]][i] = -1;
       }
+      // vowel check : fill -2
+      if (G.cells[index[2]+1]!==undefined && ['ุ','ู'].includes(G.cells[index[2]+1][i])) {
+        arr[index[2]+1][i] = -2;
+      } else if(G.cells[index[2]-1]!==undefined && ["ิ","ี","ึ","ื","่","้","๊","๋","็","์","ั"].includes(G.cells[index[2]+1][i])) {
+        arr[index[2]-1][i] = -2;
+      }
     }
   } else if (index[3] === 1) {
     //col (vertical)
@@ -330,8 +336,11 @@ function fillLine(G, ctx, index) {
           arr[index[2] + 1] !== undefined &&
           arr[index[2] - 1] !== undefined
         ) {
-          arr[index[2] + 1][index[0] - x] = -2; //vowel below
-          arr[index[2] - 1][index[0] - x] = -2; //vowel above
+          if (["ุ", "ู"].includes(G.cells[index[2] + 1][index[0] - x])) {
+            arr[index[2] + 1][index[0] - x] = 2; //vowel below
+          } else {
+            arr[index[2] - 1][index[0] - x] = 2; //vowel above
+          }
         }
       } else if (
         !defaultVal.includes(G.cells[index[2]][index[1] + x]) &&
@@ -340,13 +349,13 @@ function fillLine(G, ctx, index) {
         //right
         arr[index[2]][index[1] + x] = -1;
         //check if vowel row is not undefined
-        if (
-          arr[index[2] + 1] !== undefined &&
-          arr[index[2] - 1] !== undefined
-        ) {
-          arr[index[2] + 1][index[1] + x] = -2; //vowel below
-          arr[index[2] - 1][index[1] + x] = -2; //vowel above
-        }
+     
+          if (arr[index[2] + 1] !== undefined && ["ุ", "ู"].includes(G.cells[index[2] + 1][index[1] + x])) {
+            arr[index[2] + 1][index[1] + x] = 2; //vowel below
+          } else if(arr[index[2] - 1] !== undefined && ["ิ","ี","ึ","ื","่","้","๊","๋","็","์","ั"].includes(G.cells[index[2] - 1][index[1] + x])) {
+            arr[index[2] - 1][index[1] + x] = 2; //vowel above
+          }
+        
       } else {
         break;
       }
@@ -365,7 +374,8 @@ function fillLine(G, ctx, index) {
       ) {
         //up 2 cells
         arr[index[0] - (x + 1)][index[2]] = -1;
-      } else if (
+      } 
+      if (
         G.cells[index[1] + x] /*[index[2]]*/ !== undefined &&
         !defaultVal.includes(G.cells[index[1] + x][index[2]])
       ) {
@@ -377,8 +387,6 @@ function fillLine(G, ctx, index) {
       ) {
         //down 2 cells
         arr[index[1] + (x + 1)][index[2]] = -1;
-      } else {
-        break;
       }
     }
   }
@@ -387,13 +395,13 @@ function fillLine(G, ctx, index) {
     //FIXME: check if not undefined
     for (let i = index[0]; i <= index[1]; i++) {
       if (
-        unlimitedSet.includes(G.cells[index[2] + 1][i]) &&
+        ["ุ", "ู"].includes(G.cells[index[2] + 1][i]) &&
         G.cells[index[2] + 1] !== undefined
       ) {
         arr[index[2] + 1][i] = 2;
       }
       if (
-        unlimitedSet.includes(G.cells[index[2] - 1][i]) &&
+        ["ิ","ี","ึ","ื","่","้","๊","๋","็","์","ั"].includes(G.cells[index[2] - 1][i]) &&
         G.cells[index[2] - 1] !== undefined
       ) {
         arr[index[2] - 1][i] = 2;
