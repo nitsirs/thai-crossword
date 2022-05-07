@@ -1,8 +1,8 @@
 import Paper from "@mui/material/Paper";
 import ImageList from "@mui/material/ImageList";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Characters from "./Characters";
 import { unlimitedSet } from "../game/boardInfo";
+import Droppable from "./Droppable";
 
 function Board(props) {
   return (
@@ -56,39 +56,8 @@ function Board(props) {
             }
 
             return (
-              <Droppable
-                droppableId={`${rowIndex}-${cellIndex}`}
-                key={`${rowIndex}-${cellIndex}`}
-              >
-                {(provided, snapshot) => (
-                  <Paper
-                    sx={{
-                      width: "7vh",
-                      height: height,
-                      backgroundColor: bgcolor,
-                      color: "white",
-                      textAlign: "center",
-                    }}
-                    variant="outlined"
-                    square
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                  >
-                    {isContained && (
-                      <Characters
-                        value={cell}
-                        index={parseInt(`${rowIndex}${cellIndex}`)}
-                        height={height}
-                      />
-                    )}
-                    <h2 style={{ fontSize: "4.5vh", marginTop: "0" }}>
-                      {cell !== 0 && cell !== 1 && cell}
-                    </h2>
+                  <Droppable key={`${rowIndex}-${cellIndex}`} height={height} bgcolor={bgcolor} isContained={isContained} cell={cell} row={row} cellIndex={cellIndex} rowIndex={rowIndex}/>
 
-                    {provided.placeholder}
-                  </Paper>
-                )}
-              </Droppable>
             );
           })
         )}
